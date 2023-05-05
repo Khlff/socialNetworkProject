@@ -1,0 +1,182 @@
+openapi: 3.0.2
+info:
+  title: Friends service
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api/v1
+    description: dev-server
+paths:
+  /user:
+    post:
+      summary: Регистрирует нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Имя пользователя
+                id:
+                  type: string
+                  description: Айди пользователя
+              required:
+                - username
+                - id
+      responses:
+        '201':
+          description: Успешно создано
+        '400':
+          description: Некорректный запрос
+          
+          
+  /user/{userId}/request:
+    post:
+      summary: Отправляет заявку в друзья другому пользователю
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            description: id отправителя заявки
+        - in: query
+          name: recipientId
+          required: true
+          schema:
+            type: integer
+            description: id получателя заявки
+      responses:
+        '201':
+          description: Успешно создано
+        '400':
+          description: Некорректный запрос
+          
+          
+  /user/{userId}/arequest:
+    put:
+      summary: Принимает/отклоняет заявку в друзья
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            description: id юзера, у которого висит заявка
+        - in: query
+          name: senderId
+          required: true
+          schema:
+            type: integer
+            description: id отправителя заявки
+        - in: query
+          name: status
+          required: true
+          schema:
+            type: string
+            enum: [accepted, rejected]
+            description: Статус заявки
+      responses:
+        '200':
+          description: Успешно обновлено
+        '400':
+          description: Некорректный запрос
+          
+          
+  /user/{userId}/requests:
+    get:
+      summary: Возвращает список входящих и исходящих заявок в друзья для пользователя
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            description: id пользователя
+      responses:
+        '200':
+          description: Успешно получено
+        '400':
+          description: Некорректный запрос
+          
+          
+  /user/{userId}/friends:
+    get:
+      summary: Возвращает список друзей пользователя
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            description: id пользователя
+      responses:
+        '200':
+          description: Успешно получено
+        '400':
+          description: Некорректный запрос
+          
+          
+  /user/{userId}/friend:
+    get:
+      summary: Возвращает статус дружбы пользователя с другим пользователем
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            description: id пользователя
+        - in: query
+          name: friendId
+          required: true
+          schema:
+            type: integer
+            description: id другого пользователя
+      responses:
+        '200':
+          description: Успешно получено
+        '400':
+          description: Некорректный запрос
+          
+          
+  /user/{userId}/friend/{friendId}:
+    delete:
+      summary: Удаляет пользователя из списка друзей
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            description: id пользователя
+        - in: path
+          name: friendId
+          required: true
+          schema:
+            type: integer
+            description: id другого пользователя
+      responses:
+        '200':
+          description: Успешно удалено
+        '400':
+          description: Некорректный запрос
+          
+          
+  /user/{userId}/requests/auto-accept:
+    put:
+      summary: Принимает все взаимные заявки в друзья
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: integer
+            description: id пользователя
+      responses:
+        '200':
+          description: Успешно обновлено
+        '400':
+          description: Некорректный запрос
