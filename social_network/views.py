@@ -5,9 +5,9 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import UserSerializer, FriendshipSerializer, \
-    FriendRequestSerializer
+
 from .models import User, Friendship, FriendRequest
+from .serializers import UserSerializer, FriendRequestSerializer
 
 
 @api_view(['POST'])
@@ -24,10 +24,10 @@ def create_user(request) -> Response:
 
 
 @api_view(['POST'])
-def send_friend_request(request, user_id) -> Response:
+def send_friend_request(request, user_id: int) -> Response:
     """
     Отправить одному пользователю заявку в друзья другому
-    :param request: запрос
+    :param request: WSGI запрос
     :param user_id: id от кого отправить заявку
     :return: код ответа: 201 - SUCCESSFUL_CREATED
     """
@@ -42,10 +42,10 @@ def send_friend_request(request, user_id) -> Response:
 
 
 @api_view(['PUT'])
-def accept_reject_friend_request(request, user_id) -> Response:
+def accept_reject_friend_request(request, user_id: int) -> Response:
     """
     Принять/отклонить пользователю заявку в друзья от другого пользователя
-    :param request: запрос
+    :param request: WSGI запрос
     :param user_id: id у которого принять/отменить заявку
     :return: Код ответа: 200 - OK
     """
@@ -67,10 +67,10 @@ def accept_reject_friend_request(request, user_id) -> Response:
 
 
 @api_view(['GET'])
-def list_friend_requests(request, user_id) -> Response:
+def list_friend_requests(request, user_id: int) -> Response:
     """
     Посмотреть список исходящих и входящих заявок в друзья пользователя
-    :param request: запрос
+    :param request: WSGI запрос
     :param user_id: у кого смотрим
     :return: dict {received: входящие заявки дружбы, sent: исходящие}
     """
@@ -84,7 +84,13 @@ def list_friend_requests(request, user_id) -> Response:
 
 
 @api_view(['GET'])
-def list_friends(request, user_id):
+def list_friends(request, user_id: int) -> Response:
+    """
+    Получить список друзей пользователя
+    @param request: WSGI запрос
+    @param user_id: у кого смотрим
+    @return: Response object containing friends list
+    """
     user = get_object_or_404(User, id=user_id)
     friendships = Friendship.objects.filter(user1=user) | Friendship.objects. \
         filter(user2=user)
@@ -100,7 +106,13 @@ def list_friends(request, user_id):
 
 
 @api_view(['GET'])
-def get_friend_status(request, user_id) -> Response:
+def get_friend_status(request, user_id: int) -> Response:
+    """
+    Получить статус дружбы пользователя с другим пользователем
+    @param request: WSGI запрос
+    @param user_id: id первого пользователя, у которого смотрим
+    @return: True - друзья, False - нет
+    """
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
     friend_id = body.get('friendId', None)
@@ -115,7 +127,14 @@ def get_friend_status(request, user_id) -> Response:
 
 
 @api_view(['DELETE'])
-def remove_from_friends(request, user_id, friend_id):
+def remove_from_friends(request, user_id: int, friend_id: int) -> Response:
+    """
+    Удалить из списка друзей
+    @param request: WSGI запрос
+    @param user_id: id у кого удаляем
+    @param friend_id: id который удаляем
+    @return: HTTP response 200, если успешно удалилось
+    """
     user = User.objects.get(id=user_id)
     friend = User.objects.get(id=friend_id)
     Friendship.objects.filter(
