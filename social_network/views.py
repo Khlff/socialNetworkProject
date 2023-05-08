@@ -7,7 +7,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import User, Friendship, FriendRequest
-from .serializers import UserSerializer, FriendRequestSerializer
+from .serializers import UserSerializer, FriendRequestSerializer, \
+    FriendshipSerializer
 
 
 @api_view(['POST'])
@@ -26,7 +27,9 @@ def create_user(request) -> Response:
 @api_view(['POST'])
 def send_friend_request(request, user_id: int) -> Response:
     """
-    Отправить одному пользователю заявку в друзья другому
+    Отправить одному пользователю заявку в друзья другому.
+    Если юзер, который отправляет заявку в друзья уже имеет входящую заявку
+    от получателя, то они автоматически добавятся в друзья
     :param request: WSGI запрос
     :param user_id: id от кого отправить заявку
     :return: код ответа: 201 - SUCCESSFUL_CREATED
@@ -36,15 +39,32 @@ def send_friend_request(request, user_id: int) -> Response:
     body = json.loads(body_unicode)
     recipient_id = body.get('recipientId', None)
     recipient = User.objects.get(id=recipient_id)
-    request = FriendRequest.objects.create(sender=sender, recipient=recipient)
-    return Response(FriendRequestSerializer(request).data,
-                    status=status.HTTP_201_CREATED)
+
+    friend_request = FriendRequest.objects.filter(sender=recipient,
+                                                  recipient=sender).first()
+
+    if friend_request:
+        friendship = Friendship.objects.create(user1=sender, user2=recipient)
+
+        friend_request = FriendRequest.objects.get(
+            recipient=user_id,
+            sender=recipient_id
+        )
+        friend_request.delete()
+
+        return Response(FriendshipSerializer(friendship).data,
+                        status=status.HTTP_201_CREATED)
+    else:
+        friend_request = FriendRequest.objects.create(sender=sender,
+                                                      recipient=recipient)
+        return Response(FriendRequestSerializer(friend_request).data,
+                        status=status.HTTP_201_CREATED)
 
 
 @api_view(['PUT'])
 def accept_reject_friend_request(request, user_id: int) -> Response:
     """
-    Принять/отклонить пользователю заявку в друзья от другого пользователя
+    Принять/отклонить пользователю заявку в друзья от другого пользователя.
     :param request: WSGI запрос
     :param user_id: id у которого принять/отменить заявку
     :return: Код ответа: 200 - OK
