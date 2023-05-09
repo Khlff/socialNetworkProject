@@ -34,31 +34,34 @@ def send_friend_request(request, user_id: int) -> Response:
     :param user_id: id от кого отправить заявку
     :return: код ответа: 201 - SUCCESSFUL_CREATED
     """
-    sender = User.objects.get(id=user_id)
-    body_unicode = request.body.decode('utf-8')
-    body = json.loads(body_unicode)
-    recipient_id = body.get('recipientId', None)
-    recipient = User.objects.get(id=recipient_id)
+    try:
+        sender = User.objects.get(id=user_id)
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        recipient_id = body.get('recipientId', None)
+        recipient = User.objects.get(id=recipient_id)
 
-    friend_request = FriendRequest.objects.filter(sender=recipient,
-                                                  recipient=sender).first()
+        friend_request = FriendRequest.objects.filter(sender=recipient,
+                                                      recipient=sender).first()
 
-    if friend_request:
-        friendship = Friendship.objects.create(user1=sender, user2=recipient)
+        if friend_request:
+            friendship = Friendship.objects.create(user1=sender, user2=recipient)
 
-        friend_request = FriendRequest.objects.get(
-            recipient=user_id,
-            sender=recipient_id
-        )
-        friend_request.delete()
+            friend_request = FriendRequest.objects.get(
+                recipient=user_id,
+                sender=recipient_id
+            )
+            friend_request.delete()
 
-        return Response(FriendshipSerializer(friendship).data,
-                        status=status.HTTP_201_CREATED)
-    else:
-        friend_request = FriendRequest.objects.create(sender=sender,
-                                                      recipient=recipient)
-        return Response(FriendRequestSerializer(friend_request).data,
-                        status=status.HTTP_201_CREATED)
+            return Response(FriendshipSerializer(friendship).data,
+                            status=status.HTTP_201_CREATED)
+        else:
+            friend_request = FriendRequest.objects.create(sender=sender,
+                                                          recipient=recipient)
+            return Response(FriendRequestSerializer(friend_request).data,
+                            status=status.HTTP_201_CREATED)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['PUT'])
@@ -69,21 +72,24 @@ def accept_reject_friend_request(request, user_id: int) -> Response:
     :param user_id: id у которого принять/отменить заявку
     :return: Код ответа: 200 - OK
     """
-    user = User.objects.get(id=user_id)
+    try:
+        user = User.objects.get(id=user_id)
 
-    body_unicode = request.body.decode('utf-8')
-    body = json.loads(body_unicode)
-    sender_id = body.get('senderId', None)
-    request_status = body.get('status', None)
+        body_unicode = request.body.decode('utf-8')
+        body = json.loads(body_unicode)
+        sender_id = body.get('senderId', None)
+        request_status = body.get('status', None)
 
-    friend_request = FriendRequest.objects.get(
-        recipient=user,
-        sender=User.objects.get(id=sender_id)
-    )
-    if request_status == 'accepted':
-        Friendship.objects.create(user1=user, user2=friend_request.sender)
-    friend_request.delete()
-    return Response(status=status.HTTP_200_OK)
+        friend_request = FriendRequest.objects.get(
+            recipient=user,
+            sender=User.objects.get(id=sender_id)
+        )
+        if request_status == 'accepted':
+            Friendship.objects.create(user1=user, user2=friend_request.sender)
+        friend_request.delete()
+        return Response(status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -94,13 +100,16 @@ def list_friend_requests(request, user_id: int) -> Response:
     :param user_id: у кого смотрим
     :return: dict {received: входящие заявки дружбы, sent: исходящие}
     """
-    user = User.objects.get(id=user_id)
-    received_requests = FriendRequest.objects.filter(recipient=user)
-    sent_requests = FriendRequest.objects.filter(sender=user)
-    return Response({
-        'received': FriendRequestSerializer(received_requests, many=True).data,
-        'sent': FriendRequestSerializer(sent_requests, many=True).data
-    })
+    try:
+        user = User.objects.get(id=user_id)
+        received_requests = FriendRequest.objects.filter(recipient=user)
+        sent_requests = FriendRequest.objects.filter(sender=user)
+        return Response({
+            'received': FriendRequestSerializer(received_requests, many=True).data,
+            'sent': FriendRequestSerializer(sent_requests, many=True).data
+        })
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -111,18 +120,21 @@ def list_friends(request, user_id: int) -> Response:
     @param user_id: у кого смотрим
     @return: Response object containing friends list
     """
-    user = get_object_or_404(User, id=user_id)
-    friendships = Friendship.objects.filter(user1=user) | Friendship.objects. \
-        filter(user2=user)
-    friends_list = []
-    for friendship in friendships:
-        if friendship.user1 == user:
-            friend = friendship.user2
-        else:
-            friend = friendship.user1
-        friend_data = {'id': friend.id, 'username': friend.username}
-        friends_list.append(friend_data)
-    return Response({'friends': friends_list})
+    try:
+        user = User.objects.get(id=user_id)
+        friendships = Friendship.objects.filter(user1=user) | Friendship.objects. \
+            filter(user2=user)
+        friends_list = []
+        for friendship in friendships:
+            if friendship.user1 == user:
+                friend = friendship.user2
+            else:
+                friend = friendship.user1
+            friend_data = {'id': friend.id, 'username': friend.username}
+            friends_list.append(friend_data)
+        return Response({'friends': friends_list})
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -133,17 +145,21 @@ def get_friend_status(request, user_id: int) -> Response:
     @param user_id: id первого пользователя, у которого смотрим
     @return: True - друзья, False - нет
     """
-    body_unicode = request.body.decode('utf-8')
-    body = json.loads(body_unicode)
-    friend_id = body.get('friendId', None)
+    friend_id = request.GET.get('friendId', None)
 
-    user = User.objects.get(id=user_id)
-    friend = User.objects.get(id=friend_id)
-    friendship1 = Friendship.objects.filter(user1=user, user2=friend)
-    friendship2 = Friendship.objects.filter(user1=friend, user2=user)
-    return Response({
-        'status': bool(friendship1 or friendship2)
-    })
+    if not friend_id:
+        return Response({'error': 'friendId is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(id=user_id)
+        friend = User.objects.get(id=friend_id)
+        friendship1 = Friendship.objects.filter(user1=user, user2=friend)
+        friendship2 = Friendship.objects.filter(user1=friend, user2=user)
+        return Response({
+            'status': bool(friendship1 or friendship2)
+        })
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['DELETE'])
@@ -155,8 +171,11 @@ def remove_from_friends(request, user_id: int, friend_id: int) -> Response:
     @param friend_id: id который удаляем
     @return: HTTP response 200, если успешно удалилось
     """
-    user = User.objects.get(id=user_id)
-    friend = User.objects.get(id=friend_id)
-    Friendship.objects.filter(
-        Q(user1=user, user2=friend) | Q(user1=friend, user2=user)).delete()
-    return Response({'ok'}, status=status.HTTP_200_OK)
+    try:
+        user = User.objects.get(id=user_id)
+        friend = User.objects.get(id=friend_id)
+        Friendship.objects.filter(
+            Q(user1=user, user2=friend) | Q(user1=friend, user2=user)).delete()
+        return Response({'ok'}, status=status.HTTP_200_OK)
+    except User.DoesNotExist:
+        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)

@@ -3,7 +3,7 @@ info:
   title: Friends service
   version: 1.0.0
 servers:
-  - url: http://localhost:8080/api/v1/
+  - url: http://localhost:8000/api/v1/
     description: dev-server
 paths:
   /user:
@@ -30,8 +30,9 @@ paths:
           description: Успешно создано
         '400':
           description: Некорректный запрос
-          
-          
+
+
+
   /user/{userId}/request:
     post:
       summary: Отправляет заявку в друзья другому пользователю
@@ -53,8 +54,10 @@ paths:
           description: Успешно создано
         '400':
           description: Некорректный запрос
-          
-          
+        '404':
+          description: Не найден пользователь
+
+
   /user/{userId}/arequest:
     put:
       summary: Принимает/отклоняет заявку в друзья
@@ -76,15 +79,17 @@ paths:
           required: true
           schema:
             type: string
-            enum: [accepted, rejected]
+            enum: [ accepted, rejected ]
             description: Статус заявки
       responses:
         '200':
           description: Успешно обновлено
         '400':
           description: Некорректный запрос
-          
-          
+        '404':
+          description: Не найден пользователь
+
+
   /user/{userId}/requests:
     get:
       summary: Возвращает список входящих и исходящих заявок в друзья для пользователя
@@ -100,8 +105,10 @@ paths:
           description: Успешно получено
         '400':
           description: Некорректный запрос
-          
-          
+        '404':
+          description: Не найден пользователь
+
+
   /user/{userId}/friends:
     get:
       summary: Возвращает список друзей пользователя
@@ -117,8 +124,10 @@ paths:
           description: Успешно получено
         '400':
           description: Некорректный запрос
-          
-          
+        '404':
+          description: Не найден пользователь
+
+
   /user/{userId}/friend:
     get:
       summary: Возвращает статус дружбы пользователя с другим пользователем
@@ -140,8 +149,10 @@ paths:
           description: Успешно получено
         '400':
           description: Некорректный запрос
-          
-          
+        '404':
+          description: Не найден пользователь
+
+
   /user/{userId}/friend/{friendId}:
     delete:
       summary: Удаляет пользователя из списка друзей
@@ -163,20 +174,5 @@ paths:
           description: Успешно удалено
         '400':
           description: Некорректный запрос
-          
-          
-  /user/{userId}/requests/auto-accept:
-    put:
-      summary: Принимает все взаимные заявки в друзья
-      parameters:
-        - in: path
-          name: userId
-          required: true
-          schema:
-            type: integer
-            description: id пользователя
-      responses:
-        '200':
-          description: Успешно обновлено
-        '400':
-          description: Некорректный запрос
+        '404':
+          description: Не найден пользователь
