@@ -1,7 +1,6 @@
 import json
 
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -45,7 +44,8 @@ def send_friend_request(request, user_id: int) -> Response:
                                                       recipient=sender).first()
 
         if friend_request:
-            friendship = Friendship.objects.create(user1=sender, user2=recipient)
+            friendship = Friendship.objects.create(user1=sender,
+                                                   user2=recipient)
 
             friend_request = FriendRequest.objects.get(
                 recipient=user_id,
@@ -61,7 +61,8 @@ def send_friend_request(request, user_id: int) -> Response:
             return Response(FriendRequestSerializer(friend_request).data,
                             status=status.HTTP_201_CREATED)
     except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'User not found'},
+                        status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['PUT'])
@@ -89,7 +90,8 @@ def accept_reject_friend_request(request, user_id: int) -> Response:
         friend_request.delete()
         return Response(status=status.HTTP_200_OK)
     except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'User not found'},
+                        status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -105,11 +107,13 @@ def list_friend_requests(request, user_id: int) -> Response:
         received_requests = FriendRequest.objects.filter(recipient=user)
         sent_requests = FriendRequest.objects.filter(sender=user)
         return Response({
-            'received': FriendRequestSerializer(received_requests, many=True).data,
+            'received': FriendRequestSerializer(received_requests,
+                                                many=True).data,
             'sent': FriendRequestSerializer(sent_requests, many=True).data
         })
     except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'User not found'},
+                        status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -122,8 +126,9 @@ def list_friends(request, user_id: int) -> Response:
     """
     try:
         user = User.objects.get(id=user_id)
-        friendships = Friendship.objects.filter(user1=user) | Friendship.objects. \
-            filter(user2=user)
+        friendships = Friendship.objects.filter(
+            user1=user) | Friendship.objects. \
+                          filter(user2=user)
         friends_list = []
         for friendship in friendships:
             if friendship.user1 == user:
@@ -134,7 +139,8 @@ def list_friends(request, user_id: int) -> Response:
             friends_list.append(friend_data)
         return Response({'friends': friends_list})
     except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'User not found'},
+                        status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -148,7 +154,8 @@ def get_friend_status(request, user_id: int) -> Response:
     friend_id = request.GET.get('friendId', None)
 
     if not friend_id:
-        return Response({'error': 'friendId is required'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'friendId is required'},
+                        status=status.HTTP_400_BAD_REQUEST)
 
     try:
         user = User.objects.get(id=user_id)
@@ -159,7 +166,8 @@ def get_friend_status(request, user_id: int) -> Response:
             'status': bool(friendship1 or friendship2)
         })
     except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'User not found'},
+                        status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['DELETE'])
@@ -178,4 +186,5 @@ def remove_from_friends(request, user_id: int, friend_id: int) -> Response:
             Q(user1=user, user2=friend) | Q(user1=friend, user2=user)).delete()
         return Response({'ok'}, status=status.HTTP_200_OK)
     except User.DoesNotExist:
-        return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response({'error': 'User not found'},
+                        status=status.HTTP_404_NOT_FOUND)

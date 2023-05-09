@@ -1,7 +1,6 @@
 import json
 from collections import OrderedDict
 
-from django.http import JsonResponse
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.exceptions import ErrorDetail
