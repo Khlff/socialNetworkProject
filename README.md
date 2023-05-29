@@ -1,5 +1,4 @@
 ## SocialNetwork
-[![Coverage Status](https://coveralls.io/repos/github/Khlff/placesRememberProject/badge.svg?branch=master)](https://coveralls.io/github/Khlff/placesRememberProject?branch=master)
 ### This is an API service written in Django using the `rest_framework` library. It allows you to create new users, add other users as friends, delete, view status, and so on.
 
 ## Installation
