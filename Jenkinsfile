@@ -24,7 +24,7 @@ pipeline {
                         def registry_url = "registry.hub.docker.com/"
                         sh "docker login -u $USER -p $PASSWORD ${registry_url}"
                         docker.withRegistry("http://${registry_url}", "docker-id") {
-                            app.push("latest") 
+                            sh "docker push socialnetworkproject/socialnetworkproject:latest" 
                         }
                     }
                 }    
