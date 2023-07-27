@@ -8,8 +8,10 @@ pipeline {
         }
         stage('SonarQube analysis') {
 	    steps {
-		    sh 'echo Run SAST - SonarQube analysis'
-		    def scannerHome = tool 'sonar_scanner';
+		    script {
+			    sh 'echo Run SAST - SonarQube analysis'
+			    def scannerHome = tool 'sonar_scanner';
+		    }
 		    withSonarQubeEnv('sonarqube-local') {
 			sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=myapp"
 		    }
