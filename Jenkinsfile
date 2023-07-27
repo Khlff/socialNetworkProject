@@ -10,7 +10,7 @@ pipeline {
         stage('Build Image') {
             steps {
                 script {
-                    echo Build application image
+                    echo 'Build application image'
                     app = docker.build("socialNetworkProject/socialNetworkProject ", ".")
                 }
             }
