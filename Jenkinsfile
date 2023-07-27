@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script {
                     echo 'Build application image'
-                    app = docker.build("socialnetworkproject/socialnetworkproject", ".")
+                    app = docker.build("moshina222/socialnetworkproject", ".")
                 }
             }
         }
