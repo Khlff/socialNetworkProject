@@ -22,7 +22,7 @@ pipeline {
                     echo 'Push image to a Docker Hub'
                     withCredentials([usernamePassword( credentialsId: 'docker-id', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
                         def registry_url = "registry.hub.docker.com/"
-                        bat "docker login -u $USER -p $PASSWORD ${registry_url}"
+                        sh "docker login -u $USER -p $PASSWORD ${registry_url}"
                         docker.withRegistry("http://${registry_url}", "docker-hub-credentials") {
                             app.push("latest") 
                         }
