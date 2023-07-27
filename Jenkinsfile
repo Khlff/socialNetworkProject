@@ -1,11 +1,16 @@
 pipeline {
     agent any
+    environment {
+        scannerHome = tool 'sonar_scanner'
+    }
+	
     stages {
         stage('Clone Git repository') {
             steps {
                 checkout scm
             }
         }
+	
         stage('SonarQube analysis') {
 	    steps {
 		    script {
