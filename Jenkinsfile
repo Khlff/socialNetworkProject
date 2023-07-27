@@ -48,18 +48,20 @@ pipeline {
                 }    
             }
         }
+	    
         stage('Run container') {
             steps {
                 sh 'echo Run container'
                 sh 'ansible-playbook /opt/playbooks/docker_playbook.yaml -i /opt/playbooks/hosts'
             }
         }
+	    
 	stage('OWASP ZAP analysis') {
 		steps {
 			sh 'echo Run DAST - OWASP ZAP analysis'
 			script {
 				def hosts = ansiblePlaybook(
-				  playbook: 'playbook.yml', 
+				  playbook: '/opt/playbooks/docker_playbook.yaml', 
 				  inventory: 'inventory.ini'  
 				).Inventory.collect{ it.key }
 				def targetHost = hosts[0]
