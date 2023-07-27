@@ -7,15 +7,19 @@ pipeline {
             }
         }
         stage('SonarQube analysis') {
-            sh 'echo Run SAST - SonarQube analysis'
-            def scannerHome = tool 'sonar_scanner';
-            withSonarQubeEnv() {
-                sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=myapp"
-            }
+	    steps {
+		    sh 'echo Run SAST - SonarQube analysis'
+		    def scannerHome = tool 'sonar_scanner';
+		    withSonarQubeEnv() {
+			sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=myapp"
+		    }
+	    }
         }
 	
         stage("SonarQube Quality Gate") {
-            waitForQualityGate abortPipeline: true
+		steps {
+            		waitForQualityGate abortPipeline: true
+		}
         }
 
         stage('Build Image') {
