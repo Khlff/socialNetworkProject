@@ -60,10 +60,7 @@ pipeline {
 		steps {
 			sh 'echo Run DAST - OWASP ZAP analysis'
 			script {
-				def hosts = ansiblePlaybook(
-				  playbook: '/opt/playbooks/docker_playbook.yaml', 
-				  inventory: 'inventory.ini'  
-				).Inventory.collect{ it.key }
+				def hosts = ansiblePlaybook(playbook: '/opt/playbooks/docker_playbook.yaml').Inventory.collect{ it.key }
 				def targetHost = hosts[0]
 			}
 			sh "docker run -t owasp/zap2docker-stable zap-baseline.py -t http://${targetHost} || true"
