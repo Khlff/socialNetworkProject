@@ -20,7 +20,9 @@ pipeline {
             steps {
                 script {
                     echo 'Push image to a Docker Hub'
-                    app.push()
+                    docker.withRegistry('https://registry-1.docker.io/v2/', 'docker-id') {
+                        app.push()
+                    }
                 }    
             }
         }
