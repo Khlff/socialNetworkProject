@@ -20,10 +20,14 @@ pipeline {
             steps {
                 script {
                     echo 'Push image to a Docker Hub'
-                    withDockerRegistry([ credentialsId: "docker-id", url: "" ]) {
-                        app.push("latest") 
+                    withCredentials([usernamePassword( credentialsId: 'docker-id', usernameVariable: 'USER', passwordVariable: 'PASSWORD')]) {
+                        def registry_url = "registry.hub.docker.com/"
+                        bat "docker login -u $USER -p $PASSWORD ${registry_url}"
+                        docker.withRegistry("http://${registry_url}", "docker-hub-credentials") {
+                            app.push("latest") 
+                        }
                     }
-                }
+                }    
             }
         }
         stage('Run container') {
