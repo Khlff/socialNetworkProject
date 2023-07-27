@@ -25,7 +25,7 @@ pipeline {
         stage("SonarQube Quality Gate") {
 		steps {
 			echo 'Quality Gate ok'
-            		# waitForQualityGate abortPipeline: true
+            		// waitForQualityGate abortPipeline: true
 		}
         }
 
