@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        scannerHome = tool 'sonarqube-local'
+        scannerHome = tool 'sonar_scanner'
     }
 	
     stages {
@@ -16,7 +16,7 @@ pipeline {
 		    script {
 			    sh 'echo Run SAST - SonarQube analysis'
 		    }
-		    withSonarQubeEnv('sonarqube-local') {
+		    withSonarQubeEnv('sonar_scanner') {
 			sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=myapp"
 		    }
 	    }
