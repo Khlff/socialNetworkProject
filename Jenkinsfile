@@ -16,7 +16,7 @@ pipeline {
 		    script {
 			    sh 'echo Run SAST - SonarQube analysis'
 		    }
-		    withSonarQubeEnv('sonar_scanner') {
+		    withSonarQubeEnv() {
 			sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=myapp"
 		    }
 	    }
