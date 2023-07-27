@@ -29,7 +29,8 @@ APPEND_SLASH = True
 ALLOWED_HOSTS = [
     '0.0.0.0',
     '127.0.0.1',
-    'localhost'
+    'localhost',
+    '192.168.88.71',
 ]
 
 
